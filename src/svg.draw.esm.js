@@ -117,6 +117,7 @@ var lineable = {
 
     if (this.options.drawCircles) {
       this.drawCircles();
+      // debugger
     } else {
       this.set.forEach(function (e) {
         return e.remove();
@@ -175,11 +176,12 @@ var lineable = {
       );
       this.set.push(
         this.parent
-          .circle(5)
+          .circle(15)
           .stroke({
-            width: 1,
+            width: 4,
+            color: 'blue'
           })
-          .fill("#ccc")
+          .fill("white")
           .center(p.x, p.y)
       );
     }

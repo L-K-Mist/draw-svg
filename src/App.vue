@@ -1,5 +1,5 @@
 <template>
-  <div @dblclick="end()" id="svg-wrapper">
+  <div @dblclick="end()" id="svg-wrapper" ref="svgWrapper">
     <svg id="draw-svg"></svg>
   </div>
   <!-- <dev-panel></dev-panel> -->
@@ -37,6 +37,7 @@ export default defineComponent({
     // DevPanel
   },
   setup() {
+    const svgWrapper = ref(null);
     const { windowWidth, windowHeight } = useWindowSize();
 
     function viewBoxString(frame) {
@@ -63,6 +64,7 @@ export default defineComponent({
     }
     onMounted(() => {
       var drawing = SVG("#draw-svg").size(`100%`, `100%`);
+      console.log("dvdb - onMounted - SVG", SVG);
       console.log("dvdb - onMounted - drawing", drawing);
       var line = drawing
         .polyline({
@@ -75,14 +77,29 @@ export default defineComponent({
       line.on("drawpoint", () => {
         console.log(positions.value);
       });
-      drawing.on("dblClick", () => {
-        console.log("dvdb - drawing.on - dblClick");
+      svgWrapper.value.addEventListener(
+        "contextmenu",
+        function (e) {
+          e.preventDefault();
+        },
+        false
+      );
+      drawing.on("mousedown", (e) => {
+        if (e.button === 2) {
+          console.log("dvdb - drawing.on - e.button", e.button);
+          line.draw("done");
+        }
+        console.log("dvdb - onMounted - e", e);
       });
+      // drawing.on("dblclick", () => {
+      //   console.log("dvdb - drawing.on - dblClick");
+      // });
       console.log("dvdb - line.on - line", line);
     });
     return {
       shipPosition,
       end,
+      svgWrapper,
     };
   },
 });
