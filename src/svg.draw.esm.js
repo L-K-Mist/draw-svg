@@ -347,8 +347,10 @@ var PaintHandler = /*#__PURE__*/ (function () {
             this.update(event);
           } // Plugin may want to clean something
 
-          if (this.clean) {
+          if (this.clean && this.options.clean) {
+            console.log("dvdb - stop - this.", this)
             this.clean();
+            debugger
           } // Unbind from all events
 
           off(window, "mousemove.draw");
@@ -386,6 +388,7 @@ var PaintHandler = /*#__PURE__*/ (function () {
         key: "done",
         value: function done() {
           this.calc();
+          this.clean = false
           this.stop();
           this.el.fire("drawdone");
         }, // Called from outside. Cancels a poly-element
