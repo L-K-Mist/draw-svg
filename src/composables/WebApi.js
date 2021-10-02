@@ -22,7 +22,7 @@ export function useMousePositionScreen() {
 
   return {
     x,
-    y
+    y,
   };
 }
 
@@ -45,9 +45,7 @@ export function useMousePositionSVG(svgId) {
     );
     const { x, y } = svgPoint;
     svgX.value = x;
-    // console.log("handler -> svgX.value", svgX.value);
     svgY.value = y;
-    // console.log("handler -> svgY.value", svgY.value);
   }
 
   const onMouseMove = throttle(handler, 200);
@@ -62,16 +60,15 @@ export function useMousePositionSVG(svgId) {
 
   return {
     svgX,
-    svgY
+    svgY,
   };
 }
-
 
 function getCenterPoint(elementId) {
   const box = document.getElementById(elementId).getBBox();
   return {
     x: box.x + box.width / 2,
-    y: box.y + box.height / 2
+    y: box.y + box.height / 2,
   };
 }
 
@@ -79,22 +76,15 @@ export function useAngleBetweenMouseAndCenter(svgX, svgY, elementId) {
   const angle = ref(0);
   onMounted(() => {
     const centerPoint = getCenterPoint(elementId);
-    console.log("useAngleBetweenMouseAndCenter -> centerPoint", centerPoint);
-    // const centerPoint = {
-    //   x: 477,
-    //   y: 481
-    // };
     watchEffect(() => {
-      // console.log("useAngleBetweenMouseAndCenter -> centerPoint", centerPoint);
       angle.value = angleBetweenPoints(centerPoint, {
         x: svgX.value,
-        y: svgY.value
+        y: svgY.value,
       });
     });
   });
   return { angle };
 }
-
 
 export function useWindowSize() {
   const windowWidth = ref(0);

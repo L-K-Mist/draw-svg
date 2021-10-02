@@ -348,9 +348,7 @@ var PaintHandler = /*#__PURE__*/ (function () {
           } // Plugin may want to clean something
 
           if (this.clean && this.options.clean) {
-            console.log("dvdb - stop - this.", this)
             this.clean();
-            debugger
           } // Unbind from all events
 
           off(window, "mousemove.draw");
