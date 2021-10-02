@@ -25,7 +25,6 @@ const positions = computed(() => {
 });
 
 onMounted(() => {
-  // SVG bits
   var drawing = SVG("#draw-svg").size(`100%`, `100%`);
 
   var line = drawing
