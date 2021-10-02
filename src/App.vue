@@ -8,7 +8,8 @@
 <script setup>
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
-
+// These look like they're not being used, but they are.
+// the 'script setup' approach does the rest.
 import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
 </script>

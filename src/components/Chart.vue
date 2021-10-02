@@ -2,17 +2,12 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref } from "vue";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import "ol/ol.css";
-
-import {
-  useMousePositionScreen,
-  useMousePositionSVG,
-} from "@/composables/WebApi";
 
 const chart = ref(null);
 
