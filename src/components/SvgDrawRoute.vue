@@ -1,29 +1,20 @@
+<template>
+  <div id="svg-wrapper" class="chart-layer" ref="svgWrapper">
+    <svg id="draw-svg"></svg>
+  </div>
+</template>
+
 <script setup>
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, defineEmits } from "vue";
 import { SVG } from "@svgdotjs/svg.js";
 import "@/svg.draw.esm";
 
-import {
-  useMousePositionScreen,
-  useMousePositionSVG,
-} from "@/composables/WebApi";
-
 const svgWrapper = ref(null);
 
-const { svgX, svgY } = useMousePositionSVG("draw-svg");
-const { x, y } = useMousePositionScreen();
-const positions = computed(() => {
-  return {
-    svgX: svgX.value,
-    svgY: svgY.value,
-    screenX: x.value,
-    screenY: y.value,
-  };
-});
-
+const emit = defineEmits(["newCoords"]);
 onMounted(() => {
   var drawing = SVG("#draw-svg").size(`100%`, `100%`);
 
@@ -37,8 +28,9 @@ onMounted(() => {
     })
     .draw();
 
-  line.on("drawpoint", () => {
-    console.log(positions.value);
+  line.on("drawpoint", (event) => {
+    const { x: elementX, y: elementY } = event.detail.p;
+    emit("newCoords", { elementX, elementY });
   });
 
   svgWrapper.value.addEventListener(
@@ -56,12 +48,6 @@ onMounted(() => {
   });
 });
 </script>
-
-<template>
-  <div id="svg-wrapper" class="chart-layer" ref="svgWrapper">
-    <svg id="draw-svg"></svg>
-  </div>
-</template>
 
 <style scoped>
 #svg-wrapper {

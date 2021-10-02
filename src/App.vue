@@ -1,17 +1,23 @@
 <template>
   <div id="svg-chart" ref="svgChart">
-    <chart />
-    <svg-draw-route />
+    <chart ref="chartComponent" />
+    <svg-draw-route @new-coords="handleNewCoords" />
   </div>
 </template>
 
 <script setup>
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
+import { ref } from "vue";
 // These look like they're not being used, but they are.
 // the 'script setup' approach does the rest.
 import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
+
+const chartComponent = ref(null);
+function handleNewCoords(pixelCoords) {
+  chartComponent.value.handleNewCoords(pixelCoords);
+}
 </script>
 
 <style>
