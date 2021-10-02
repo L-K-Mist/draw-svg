@@ -8,16 +8,16 @@
 <script setup>
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
-import { onMounted, ref, computed } from "vue";
-const chartComponent = ref(null);
-function handleNewCoords(pixelCoords) {
-  chartComponent.value.handleNewCoords(pixelCoords);
-}
-
+import { ref } from "vue";
 // These look like they're not being used, but they are.
 // the 'script setup' approach does the rest.
 import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
+
+const chartComponent = ref(null);
+function handleNewCoords(pixelCoords) {
+  chartComponent.value.handleNewCoords(pixelCoords);
+}
 </script>
 
 <style>
