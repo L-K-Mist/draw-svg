@@ -63,8 +63,8 @@ function handleNewSvgRoute() {
   console.log("dvdb - handleNewSvgRoute - coords", coords.value);
 }
 
-function handleNewPixels(pixels){
-  svgDraw.value.handleNewPixels(pixels)
+function handleNewPixels(pixels) {
+  svgDraw.value.handleNewPixels(pixels);
 }
 </script>
 

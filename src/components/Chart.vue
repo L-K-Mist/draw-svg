@@ -24,9 +24,9 @@ let map;
 let handleDrag = ref(
   throttle(function (event) {
     // console.log("dvdb - event", event);
-    const { extent } = event.frameState;
-    console.log("dvdb - event.frameState", event.frameState);
-    emit("newExtent", transformExtent(extent, "EPSG:3857", "EPSG:4326"));
+    // const { extent } = event.frameState;
+    // console.log("dvdb - event.frameState", event.frameState);
+    // emit("newExtent", transformExtent(extent, "EPSG:3857", "EPSG:4326"));
     const newPixels = routeCoords.value.map((coord) =>
       map.getPixelFromCoordinate(coord.raw)
     );
@@ -59,6 +59,8 @@ onMounted(() => {
     console.log(transform(event.coordinate, "EPSG:3857", "EPSG:4326"));
   });
   map.on("pointerdrag", handleDrag.value);
+
+  map.getView().on("change:resolution", handleDrag.value);
 });
 
 // handleDrag.value = throttle(handleDrag.value, 1000);
