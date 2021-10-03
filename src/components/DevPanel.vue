@@ -45,7 +45,6 @@ export default defineComponent({
   transform: translateX(-50%);
   border: 1px dotted grey;
   font-weight: bold;
-  z-index: 10;
   background-color: rgba(210, 233, 240, 0.5);
 }
 </style>

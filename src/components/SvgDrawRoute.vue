@@ -17,7 +17,6 @@ const emit = defineEmits(["newCoords"]);
 
 onMounted(() => {
   let drawing = SVG("#draw-svg").size(`100%`, `100%`);
-  let circles;
   let line = drawing
     .polyline({
       "stroke-width": 10,
@@ -76,7 +75,6 @@ onMounted(() => {
 <style scoped>
 #svg-wrapper {
   outline: 4px dotted blue;
-  z-index: 10;
   /* pointer-events: none; */
 }
 

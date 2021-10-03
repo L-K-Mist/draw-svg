@@ -1,47 +1,29 @@
 <template>
   <div id="svg-chart" ref="svgChart">
     <chart ref="chartComponent" />
-    <svg-draw-route v-if="true" @new-coords="handleNewCoords" />
-    <button
-      type="button"
-      class="
-        inline-flex
-        items-center
-        px-6
-        py-3
-        border border-transparent
-        text-base
-        font-medium
-        rounded-md
-        shadow-sm
-        text-white
-        bg-indigo-600
-        hover:bg-indigo-700
-        focus:outline-none
-        focus:ring-2
-        focus:ring-offset-2
-        focus:ring-indigo-500
-        absolute
-        top-4
-        right-4
-        z-20
-      "
-    >
-      Draw Route
-    </button>
+    <svg-draw-route :style="{ pointerEvents }" @new-coords="handleNewCoords" />
+    <BaseButton @click="showRoute = !showRoute">{{
+      showRoute ? "Route Done" : "Draw Route"
+    }}</BaseButton>
   </div>
 </template>
 
 <script setup>
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
-import { ref } from "vue";
+import { ref, computed } from "vue";
 // These look like they're not being used, but they are.
 // the 'script setup' approach does the rest.
 import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
+import BaseButton from "@/baseComponents/BaseButton";
 
 const chartComponent = ref(null);
+const showRoute = ref(false);
+
+const pointerEvents = computed(() => {
+  return showRoute.value ? "inherit" : "none";
+});
 
 function handleNewCoords(pixelCoords) {
   chartComponent.value.handleNewCoords(pixelCoords);

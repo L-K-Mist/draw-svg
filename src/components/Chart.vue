@@ -48,8 +48,8 @@ function handleNewCoords({ elementX, elementY }) {
   const coordsRaw = map.getCoordinateFromPixel([elementX, elementY]);
   const coordsRefined = transform(coordsRaw, "EPSG:3857", "EPSG:4326");
   console.log("dvdb - handleNewCoords - coordsRefined", coordsRefined);
-  const coords = toStringHDMS(coordsRefined);
-  console.log("dvdb - handleNewCoords - coords", coords);
+  const coordsDMS = toStringHDMS(coordsRefined);
+  console.log("dvdb - handleNewCoords - coords", coordsDMS);
 }
 
 defineExpose({ handleNewCoords });
@@ -58,7 +58,6 @@ defineExpose({ handleNewCoords });
 <style scoped>
 #chart-wrapper {
   outline: 4px dotted green;
-  z-index: 10;
 }
 
 #chart {
