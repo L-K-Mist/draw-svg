@@ -8,16 +8,16 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 
-import { onMounted, ref, computed, defineEmits } from "vue";
+import { onMounted, ref, computed, defineEmits, defineExpose } from "vue";
 import { SVG } from "@svgdotjs/svg.js";
 import "@/svg.draw.esm";
 
 const svgWrapper = ref(null);
 const emit = defineEmits(["newCoords"]);
-
+let line;
 onMounted(() => {
   let drawing = SVG("#draw-svg").size(`100%`, `100%`);
-  let line = drawing
+  line = drawing
     .polyline({
       "stroke-width": 10,
       stroke: "blue",
@@ -28,11 +28,17 @@ onMounted(() => {
     .draw();
 
   line.on("drawpoint", (event) => {
+    console.log("drawupdate - event", event);
     const { x: elementX, y: elementY } = event.detail.p;
     emit("newCoords", { elementX, elementY });
   });
 
-  svgWrapper.value.addEventListener(
+  line.on("drawstart", (event) => {
+    console.log("drawpoint - event", event);
+    const { x: elementX, y: elementY } = event.detail.p;
+    emit("newCoords", { elementX, elementY });
+  });
+  document.addEventListener(
     "contextmenu",
     function (e) {
       e.preventDefault();
@@ -40,20 +46,8 @@ onMounted(() => {
     false
   );
 
-  function moveLineToNewPoints(line, points) {
-    if (line.circles.length !== points.length) {
-      console.error(
-        "Looks like we're attempting to move a different number of points than the line has"
-      );
-      return;
-    }
-    line.animate(3000).plot(points);
-    line.circles.forEach((circle, index) => {
-      circle = circle.animate(3000).center(points[index][0], points[index][1]);
-    });
-  }
-
   drawing.on("mousedown", (e) => {
+    console.log("mousedown - e", e);
     if (e.button === 2) {
       line.draw("done");
       const newPositions = [
@@ -62,14 +56,40 @@ onMounted(() => {
         [500, 10],
         [400, 500],
       ];
-      console.log("drawing.children()", drawing.children());
+      // console.log("drawing.children()", drawing.children());
       line.circles = drawing
         .children()
         .filter((child) => child.type === "circle");
-      moveLineToNewPoints(line, newPositions);
+      // moveLineToNewPoints(line, newPositions);
+      emit("newSvgRoute");
+      // function to changeLineToNewPoints
     }
   });
 });
+
+function handleNewExtent(extent) {
+  console.log("dvdb - handleNewExtent - extent", extent);
+}
+
+function handleNewPixels(pixels) {
+  console.log("dvdb - handleNewPixels - pixels", pixels);
+  moveLineToNewPoints(line, pixels);
+}
+
+function moveLineToNewPoints(line, points) {
+  // if (line.circles.length !== points.length) {
+  //   console.error(
+  //     "Looks like we're attempting to move a different number of points than the line has"
+  //   );
+  //   return;
+  // }
+  line.plot(points);
+  line.circles.forEach((circle, index) => {
+    circle = circle.center(points[index][0], points[index][1]);
+  });
+}
+
+defineExpose({ handleNewExtent, handleNewPixels });
 </script>
 
 <style scoped>

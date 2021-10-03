@@ -1,8 +1,18 @@
 <template>
   <div id="svg-chart" ref="svgChart">
-    <chart ref="chartComponent" />
-    <svg-draw-route :style="{ pointerEvents }" @new-coords="handleNewCoords" />
-    <BaseButton @click="showRoute = !showRoute">{{
+    <chart
+      @new-extent="handleNewExtent"
+      ref="chartComponent"
+      @newRoute="handleNewRoute"
+      @newPixels="handleNewPixels"
+    />
+    <svg-draw-route
+      ref="svgDraw"
+      :style="{ pointerEvents }"
+      @new-coords="handleNewCoords"
+      @new-svg-route="handleNewSvgRoute"
+    />
+    <BaseButton @click="handleRouteButton">{{
       showRoute ? "Route Done" : "Draw Route"
     }}</BaseButton>
   </div>
@@ -19,6 +29,7 @@ import Chart from "@/components/Chart";
 import BaseButton from "@/baseComponents/BaseButton";
 
 const chartComponent = ref(null);
+const svgDraw = ref(null);
 const showRoute = ref(false);
 
 const pointerEvents = computed(() => {
@@ -27,6 +38,33 @@ const pointerEvents = computed(() => {
 
 function handleNewCoords(pixelCoords) {
   chartComponent.value.handleNewCoords(pixelCoords);
+}
+
+let coords;
+function handleRouteButton() {
+  if (!showRoute.value) {
+    coords = chartComponent.value.getCoords();
+    // const coords = JSON.parse(JSON.stringify(coords.value));
+    console.dir("dvdb - handleRouteButton - coords.value", coords);
+  }
+  showRoute.value = !showRoute.value;
+}
+function handleNewExtent(extent) {
+  svgDraw.value.handleNewExtent(extent);
+}
+
+function handleNewRoute(coords) {
+  console.log("dvdb - handleNewRoute - coords", [...coords]);
+}
+
+function handleNewSvgRoute() {
+  showRoute.value = false;
+  coords = chartComponent.value.getCoords();
+  console.log("dvdb - handleNewSvgRoute - coords", coords.value);
+}
+
+function handleNewPixels(pixels){
+  svgDraw.value.handleNewPixels(pixels)
 }
 </script>
 
