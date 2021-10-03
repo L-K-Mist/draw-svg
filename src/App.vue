@@ -1,7 +1,7 @@
 <template>
   <div id="svg-chart" ref="svgChart">
     <chart ref="chartComponent" />
-    <svg-draw-route @new-coords="handleNewCoords" />
+    <svg-draw-route v-if="true" @new-coords="handleNewCoords" />
   </div>
 </template>
 
@@ -15,6 +15,7 @@ import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
 
 const chartComponent = ref(null);
+
 function handleNewCoords(pixelCoords) {
   chartComponent.value.handleNewCoords(pixelCoords);
 }
@@ -40,6 +41,7 @@ body {
   height: 90vh;
 }
 </style>
+
 <style>
 .chart-layer {
   position: absolute;

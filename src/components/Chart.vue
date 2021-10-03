@@ -19,22 +19,22 @@ import "ol/ol.css";
 
 const chart = ref(null);
 let map;
-// MAP bits
+
 onMounted(() => {
   map = new Map({
     target: chart.value,
-    // projection: "EPSG:3857",
+    projection: "EPSG:3857",
     layers: [
       new TileLayer({
         source: new OSM(),
       }),
     ],
     view: new View({
-      center: [0, 0],
-      zoom: 1,
-      // projection: "EPSG:3857",
+      center: transform([-1.542609, 50.703489], "EPSG:4326", "EPSG:3857"),
+      zoom: 9,
     }),
   });
+
   map.on("singleclick", function (evt) {
     console.log("dvdb - evt", evt);
     console.log(evt.coordinate);
@@ -43,13 +43,15 @@ onMounted(() => {
     console.log(transform(evt.coordinate, "EPSG:3857", "EPSG:4326"));
   });
 });
-const handleNewCoords = ({ elementX, elementY }) => {
+
+function handleNewCoords({ elementX, elementY }) {
   const coordsRaw = map.getCoordinateFromPixel([elementX, elementY]);
   const coordsRefined = transform(coordsRaw, "EPSG:3857", "EPSG:4326");
   console.log("dvdb - handleNewCoords - coordsRefined", coordsRefined);
   const coords = toStringHDMS(coordsRefined);
   console.log("dvdb - handleNewCoords - coords", coords);
-};
+}
+
 defineExpose({ handleNewCoords });
 </script>
 

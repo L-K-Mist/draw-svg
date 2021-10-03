@@ -13,12 +13,12 @@ import { SVG } from "@svgdotjs/svg.js";
 import "@/svg.draw.esm";
 
 const svgWrapper = ref(null);
-
 const emit = defineEmits(["newCoords"]);
-onMounted(() => {
-  var drawing = SVG("#draw-svg").size(`100%`, `100%`);
 
-  var line = drawing
+onMounted(() => {
+  let drawing = SVG("#draw-svg").size(`100%`, `100%`);
+  let circles;
+  let line = drawing
     .polyline({
       "stroke-width": 10,
       stroke: "blue",
@@ -41,9 +41,33 @@ onMounted(() => {
     false
   );
 
+  function moveLineToNewPoints(line, points) {
+    if (line.circles.length !== points.length) {
+      console.error(
+        "Looks like we're attempting to move a different number of points than the line has"
+      );
+      return;
+    }
+    line.animate(3000).plot(points);
+    line.circles.forEach((circle, index) => {
+      circle = circle.animate(3000).center(points[index][0], points[index][1]);
+    });
+  }
+
   drawing.on("mousedown", (e) => {
     if (e.button === 2) {
       line.draw("done");
+      const newPositions = [
+        [0, 0],
+        [1000, 100],
+        [500, 10],
+        [400, 500],
+      ];
+      console.log("drawing.children()", drawing.children());
+      line.circles = drawing
+        .children()
+        .filter((child) => child.type === "circle");
+      moveLineToNewPoints(line, newPositions);
     }
   });
 });
