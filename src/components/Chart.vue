@@ -21,14 +21,12 @@ import throttle from "lodash/throttle";
 const chart = ref(null);
 const emit = defineEmits(["newExtent"]);
 let map;
-let handleDrag = ref(
-  throttle(function (event) {
-    const newPixels = routeCoords.value.map((coord) =>
-      map.getPixelFromCoordinate(coord.raw)
-    );
-    emit("newPixels", newPixels);
-  }, 2)
-);
+let handleDrag = ref(function (event) {
+  const newPixels = routeCoords.value.map((coord) =>
+    map.getPixelFromCoordinate(coord.raw)
+  );
+  emit("newPixels", newPixels);
+});
 onMounted(() => {
   map = new Map({
     target: chart.value,
@@ -44,8 +42,11 @@ onMounted(() => {
     }),
   });
 
-  map.on("pointerdrag", handleDrag.value);
-  map.on("moveend", handleDrag.value);
+  map.on(
+    ["movestart", "change:resolution", "pointerdrag", "moveend"],
+    handleDrag.value
+  );
+  
   map.getView().on("change:resolution", handleDrag.value);
 });
 

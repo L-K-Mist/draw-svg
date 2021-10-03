@@ -84,7 +84,7 @@ function moveLineToNewPoints(line, points) {
   //   return;
   // }
   line.plot(points);
-  line.circles.forEach((circle, index) => {
+  line.circles?.forEach((circle, index) => {
     circle = circle.center(points[index][0], points[index][1]);
   });
 }
