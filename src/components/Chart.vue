@@ -23,17 +23,10 @@ const emit = defineEmits(["newExtent"]);
 let map;
 let handleDrag = ref(
   throttle(function (event) {
-    // console.log("dvdb - event", event);
-    // const { extent } = event.frameState;
-    // console.log("dvdb - event.frameState", event.frameState);
-    // emit("newExtent", transformExtent(extent, "EPSG:3857", "EPSG:4326"));
     const newPixels = routeCoords.value.map((coord) =>
       map.getPixelFromCoordinate(coord.raw)
     );
-    console.log("dvdb - newPixels", newPixels);
     emit("newPixels", newPixels);
-    // emit("newExtent", extent);
-    // console.log("dvdb - movestart - event", event.frameState);
   }, 2)
 );
 onMounted(() => {
@@ -51,39 +44,20 @@ onMounted(() => {
     }),
   });
 
-  map.on("singleclick", function (event) {
-    // console.log("dvdb - evt", event);
-    console.log(event.coordinate);
-
-    // convert coordinate to EPSG-4326
-    console.log(transform(event.coordinate, "EPSG:3857", "EPSG:4326"));
-  });
   map.on("pointerdrag", handleDrag.value);
-
+  map.on("moveend", handleDrag.value);
   map.getView().on("change:resolution", handleDrag.value);
 });
 
-// handleDrag.value = throttle(handleDrag.value, 1000);
 const routeCoords = ref([]);
 
 function handleNewCoords({ elementX, elementY }) {
   const raw = map.getCoordinateFromPixel([elementX, elementY]);
 
   const refined = transform(raw, "EPSG:3857", "EPSG:4326");
-  // console.log("dvdb - handleNewCoords - coordsRefined", coordsRefined);
   const coordsDMS = toStringHDMS(refined);
-  // console.log("dvdb - handleNewCoords - coords", coordsDMS);
+
   routeCoords.value.push({ refined, raw });
-  // console.log("dvdb - handleNewCoords - routeCoords.value", routeCoords.value);
-  // emit(
-  //   "newRoute",
-  //   JSON.parse(
-  //     JSON.stringify({
-  //       refined: routeCoords.value,
-  //       raw: routeCoordsRaw.value,
-  //     })
-  //   )
-  // );
 }
 
 function getCoords() {
