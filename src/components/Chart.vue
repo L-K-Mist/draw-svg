@@ -8,7 +8,14 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-unused-vars */
 
-import { onMounted, ref, computed, defineExpose, defineEmits } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  computed,
+  defineExpose,
+  defineEmits,
+} from "vue";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -19,7 +26,7 @@ import "ol/ol.css";
 import throttle from "lodash/throttle";
 
 const chart = ref(null);
-const emit = defineEmits(["newExtent"]);
+const emit = defineEmits(["newExtent", "newPixels"]);
 let map;
 let handleDrag = ref(function (event) {
   const newPixels = routeCoords.value.map((coord) =>
@@ -38,7 +45,7 @@ onMounted(() => {
     ],
     view: new View({
       center: transform([-1.542609, 50.703489], "EPSG:4326", "EPSG:3857"),
-      zoom: 1,
+      zoom: 8,
     }),
   });
 
@@ -46,8 +53,16 @@ onMounted(() => {
     ["movestart", "change:resolution", "pointerdrag", "moveend"],
     handleDrag.value
   );
-  
+
   map.getView().on("change:resolution", handleDrag.value);
+});
+
+onBeforeUnmount(() => {
+  map.un(
+    (["movestart", "change:resolution", "pointerdrag", "moveend"],
+    handleDrag.value)
+  );
+  map.getView().un("change:resolution", handleDrag.value);
 });
 
 const routeCoords = ref([]);

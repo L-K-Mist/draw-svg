@@ -13,7 +13,7 @@
       @new-svg-route="handleNewSvgRoute"
     />
     <BaseButton @click="handleRouteButton">{{
-      showRoute ? "Route Done" : "Draw Route"
+      showRoute ? "Draw Mode" : "Map Mode"
     }}</BaseButton>
   </div>
 </template>

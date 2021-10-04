@@ -28,7 +28,6 @@ onMounted(() => {
     .draw();
 
   line.on("drawpoint", (event) => {
-    console.log("drawupdate - event", event);
     const { x: elementX, y: elementY } = event.detail.p;
     emit("newCoords", { elementX, elementY });
   });
@@ -47,7 +46,6 @@ onMounted(() => {
   );
 
   drawing.on("mousedown", (e) => {
-    console.log("mousedown - e", e);
     if (e.button === 2) {
       line.draw("done");
       const newPositions = [
@@ -72,7 +70,6 @@ function handleNewExtent(extent) {
 }
 
 function handleNewPixels(pixels) {
-  console.log("dvdb - handleNewPixels - pixels", pixels);
   moveLineToNewPoints(line, pixels);
 }
 
