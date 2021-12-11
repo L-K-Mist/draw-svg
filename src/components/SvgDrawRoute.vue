@@ -74,12 +74,6 @@ function handleNewPixels(pixels) {
 }
 
 function moveLineToNewPoints(line, points) {
-  // if (line.circles.length !== points.length) {
-  //   console.error(
-  //     "Looks like we're attempting to move a different number of points than the line has"
-  //   );
-  //   return;
-  // }
   line.plot(points);
   line.circles?.forEach((circle, index) => {
     circle = circle.center(points[index][0], points[index][1]);
