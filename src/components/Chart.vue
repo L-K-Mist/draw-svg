@@ -23,10 +23,9 @@ import { toStringHDMS } from "ol/coordinate";
 import { toLonLat, transform, transformExtent } from "ol/proj";
 import OSM from "ol/source/OSM";
 import "ol/ol.css";
-import throttle from "lodash/throttle";
 
 const chart = ref(null);
-const emit = defineEmits(["newExtent", "newPixels"]);
+const emit = defineEmits(["newExtent", "newPixels", "moveStart", "moveEnd"]);
 let map;
 let handleDrag = ref(function (event) {
   const newPixels = routeCoords.value.map((coord) =>
@@ -49,11 +48,17 @@ onMounted(() => {
     }),
   });
 
-  map.on(
-    ["movestart", "change:resolution", "pointerdrag", "moveend"],
-    handleDrag.value
-  );
+  map.on(["change:resolution", "pointerdrag"], handleDrag.value);
+  map.on("movestart", () => {
+    console.log("dvdb - map.on - movestart");
+    emit("moveStart");
+  });
 
+  map.on("moveend", () => {
+    console.log("dvdb - map.on - moveend");
+    emit("moveEnd");
+    handleDrag.value();
+  });
   map.getView().on("change:resolution", handleDrag.value);
 });
 

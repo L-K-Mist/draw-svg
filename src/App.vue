@@ -5,10 +5,13 @@
       ref="chartComponent"
       @newRoute="handleNewRoute"
       @newPixels="handleNewPixels"
+      @moveEnd="onMoveEnd"
+      @moveStart="onMoveStart"
     />
     <svg-draw-route
       ref="svgDraw"
       :style="{ pointerEvents }"
+      :isMoving="isMoving"
       @new-coords="handleNewCoords"
       @new-svg-route="handleNewSvgRoute"
     />
@@ -31,6 +34,7 @@ import BaseButton from "@/baseComponents/BaseButton";
 const chartComponent = ref(null);
 const svgDraw = ref(null);
 const showRoute = ref(false);
+const isMoving = ref(false);
 
 const pointerEvents = computed(() => {
   return showRoute.value ? "inherit" : "none";
@@ -65,6 +69,14 @@ function handleNewSvgRoute() {
 
 function handleNewPixels(pixels) {
   svgDraw.value.handleNewPixels(pixels);
+}
+
+function onMoveStart() {
+  isMoving.value = true;
+}
+
+function onMoveEnd() {
+  isMoving.value = false;
 }
 </script>
 
