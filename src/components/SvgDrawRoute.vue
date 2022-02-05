@@ -145,16 +145,29 @@ export default {
           this.$data.stdDeviation
         );
         gsap.to("#gaussian-blur", 1, {
-          attr: { stdDeviation: 9 },
-          repeat: -1,
+          attr: { stdDeviation: 12 },
+          repeat: 0,
+          ease: "power2.out",
+          duration: 700,
           // yoyo: true,
         });
-        gsap.to(this.$data.stdDeviation, { magnitude: 9, duration: 300 });
+
         return;
       }
       gsap.to("#gaussian-blur", 1, {
         attr: { stdDeviation: 0 },
-        repeat: -1,
+        // repeat: -1,
+        repeat: 0,
+        ease: "power2.out",
+        duration: 300,
+        // yoyo: true,
+      });
+      gsap.to("#gaussian-blur", 1, {
+        attr: { stdDeviation: 0, "fill-opacity": 0 },
+        // repeat: -1,
+        repeat: 0,
+        ease: "linear",
+        duration: 700,
         // yoyo: true,
       });
       // debounce(() => {}, 500, {
