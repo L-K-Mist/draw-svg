@@ -73,10 +73,12 @@ function handleNewPixels(pixels) {
 
 function onMoveStart() {
   isMoving.value = true;
+  console.log("dvdb - onMoveStart - isMoving.value", isMoving.value);
 }
 
 function onMoveEnd() {
   isMoving.value = false;
+  console.log("dvdb - onMoveEnd - isMoving.value", isMoving.value);
 }
 </script>
 

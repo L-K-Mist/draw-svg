@@ -50,12 +50,10 @@ onMounted(() => {
 
   map.on(["change:resolution", "pointerdrag"], handleDrag.value);
   map.on("movestart", () => {
-    console.log("dvdb - map.on - movestart");
     emit("moveStart");
   });
 
   map.on("moveend", () => {
-    console.log("dvdb - map.on - moveend");
     emit("moveEnd");
     handleDrag.value();
   });
@@ -63,11 +61,11 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  map.un(
+  map.on(
     (["movestart", "change:resolution", "pointerdrag", "moveend"],
     handleDrag.value)
   );
-  map.getView().un("change:resolution", handleDrag.value);
+  map.getView().on("change:resolution", handleDrag.value);
 });
 
 const routeCoords = ref([]);
