@@ -1,20 +1,6 @@
 <template>
   <div id="svg-chart" ref="svgChart">
-    <chart
-      @new-extent="handleNewExtent"
-      ref="chartComponent"
-      @newRoute="handleNewRoute"
-      @newPixels="handleNewPixels"
-      @moveEnd="onMoveEnd"
-      @moveStart="onMoveStart"
-    />
-    <svg-draw-route
-      ref="svgDraw"
-      :style="{ pointerEvents }"
-      :isMoving="isMoving"
-      @new-coords="handleNewCoords"
-      @new-svg-route="handleNewSvgRoute"
-    />
+    <chart ref="chartComponent" />
     <BaseButton @click="handleRouteButton">{{
       showRoute ? "Draw Mode" : "Map Mode"
     }}</BaseButton>
@@ -30,56 +16,6 @@ import { ref, computed } from "vue";
 import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
 import BaseButton from "@/baseComponents/BaseButton";
-
-const chartComponent = ref(null);
-const svgDraw = ref(null);
-const showRoute = ref(false);
-const isMoving = ref(false);
-
-const pointerEvents = computed(() => {
-  return showRoute.value ? "inherit" : "none";
-});
-
-function handleNewCoords(pixelCoords) {
-  chartComponent.value.handleNewCoords(pixelCoords);
-}
-
-let coords;
-function handleRouteButton() {
-  if (!showRoute.value) {
-    coords = chartComponent.value.getCoords();
-    // const coords = JSON.parse(JSON.stringify(coords.value));
-    console.dir("dvdb - handleRouteButton - coords.value", coords);
-  }
-  showRoute.value = !showRoute.value;
-}
-function handleNewExtent(extent) {
-  svgDraw.value.handleNewExtent(extent);
-}
-
-function handleNewRoute(coords) {
-  console.log("dvdb - handleNewRoute - coords", [...coords]);
-}
-
-function handleNewSvgRoute() {
-  showRoute.value = false;
-  coords = chartComponent.value.getCoords();
-  console.log("dvdb - handleNewSvgRoute - coords", coords.value);
-}
-
-function handleNewPixels(pixels) {
-  svgDraw.value.handleNewPixels(pixels);
-}
-
-function onMoveStart() {
-  isMoving.value = true;
-  console.log("dvdb - onMoveStart - isMoving.value", isMoving.value);
-}
-
-function onMoveEnd() {
-  isMoving.value = false;
-  console.log("dvdb - onMoveEnd - isMoving.value", isMoving.value);
-}
 </script>
 
 <style>

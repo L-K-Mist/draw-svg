@@ -19,10 +19,13 @@ import {
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
+import Layer from "ol/layer/Layer";
 import { toStringHDMS } from "ol/coordinate";
 import { toLonLat, transform, transformExtent } from "ol/proj";
 import OSM from "ol/source/OSM";
 import "ol/ol.css";
+
+import { SVG } from "@svgdotjs/svg.js";
 
 const chart = ref(null);
 const emit = defineEmits(["newExtent", "newPixels", "moveStart", "moveEnd"]);
@@ -47,6 +50,38 @@ onMounted(() => {
       zoom: 8,
     }),
   });
+
+  map.addLayer(
+    new Layer({
+      render: function (frameState) {
+        console.log("dvdb - onMounted - frameState", frameState);
+
+        const [width, height] = frameState.size;
+        var draw = SVG().size(width, height);
+        draw.attr({
+          fill: "#f06",
+          "fill-opacity": 0.5,
+          style: "z-index: 2; border: 8px dotted blue",
+        });
+        console.log("dvdb - onMounted - draw", draw);
+        // const scale = svgResolution / frameState.viewState.resolution;
+        // const center = frameState.viewState.center;
+        // const cssTransform = composeCssTransform(
+        //   size[0] / 2,
+        //   size[1] / 2,
+        //   scale,
+        //   scale,
+        //   frameState.viewState.rotation,
+        //   -center[0] / svgResolution - width / 2,
+        //   center[1] / svgResolution - height / 2
+        // );
+        // svgContainer.style.transform = cssTransform;
+        // svgContainer.style.opacity = this.getOpacity();
+        // return svgContainer;
+        return draw.node;
+      },
+    })
+  );
 
   map.on(["change:resolution", "pointerdrag"], handleDrag.value);
   map.on("movestart", () => {
