@@ -16,6 +16,8 @@ import {
   defineExpose,
   defineEmits,
 } from "vue";
+import { TransitionPresets, useTransition } from "@vueuse/core";
+// OpenLayers
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -91,7 +93,12 @@ onMounted(() => {
   // calculations. While going up, this is true. When going down this is true or do this.
   // SVG(svg).addTo(svgContainer).size(svgWidth, svgHeight);
   const svgResolution = 360 / svgWidth;
-
+  const polygon = svg
+    .polygon("0,0 100,50 50,100")
+    .fill("none")
+    .stroke({ width: 10, color: "grey" })
+    .x(50)
+    .y(40);
   const rect = svg.rect(100, 100);
   rect.stroke({ color: "blue", width: 5 });
   rect.fill({ opacity: 0 });
@@ -150,8 +157,19 @@ onMounted(() => {
 // Looks like $refs are becoming first-class
 // citizens, but with the extra safety-catch
 // of defineExpose https://www.youtube.com/watch?v=tqoeAAH21Y4
-const goBlueDown = () => {
-  circle.stroke({ color: "blue" });
+const go = ({ color, direction, deltaMove }) => {
+  // let deltaPixelCoords = 0;
+  // const valueMapping = () => {
+  //   if (direction === "up") {
+  //     deltaPixelCoords = deltaMove ? deltaMove : [-500, -500];
+  //   }
+  //   if (direction === "down") {
+  //     deltaPixelCoords = [500, 500];
+  //   }
+  // };
+  const [dx, dy] = deltaMove;
+  circle.stroke({ color });
+  const inout = "<>";
   circle
     .animate({
       duration: 2000,
@@ -161,35 +179,31 @@ const goBlueDown = () => {
       // times: 5,
       // wait: 200,
     })
+    .ease(inout)
     // Now here comes the tricky bit:
     // How do we make these movements line up with the
     // geographic-coords?
     // We must map three kinds of coords between each other
     // ScreenPixelCoords, SvgCoords, GeoCoords
     // With a precision-check force update, at the end of every animation.
-    .dmove(-500, -500);
+    .dmove(dx, dy);
   // So instead of above more like:
   // .dmove(geo(17.66634, -67.45434))
 };
 
-const goGreenUp = () => {
-  circle
-    .animate({
-      duration: 2000,
-      // delay: 1000,
-      // when: "now",
-      // swing: true,
-      // times: 5,
-      // wait: 200,
-    })
-    .dmove(500, 500)
-    .animate()
-    .stroke({ color: "green" });
-};
-
 const changeCircleColor = ref(() => {
   const currentColor = circle.attr("stroke");
-  currentColor === "green" ? goBlueDown() : goGreenUp();
+  currentColor === "green"
+    ? go({
+        direction: "up",
+        color: "blue",
+        deltaMove: [-500, -500],
+      })
+    : go({
+        direction: "down",
+        color: "green",
+        deltaMove: [500, 500],
+      });
 });
 
 defineExpose({
