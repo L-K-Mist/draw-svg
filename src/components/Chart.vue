@@ -39,6 +39,9 @@ var projection = getProjection("EPSG:4326");
 var worldExtent = projection.getWorldExtent();
 console.log("dvdb - worldExtent", worldExtent);
 
+// local globals
+let circle;
+// Initialise the map with svg layer
 onMounted(() => {
   const svgContainer = document.createElement("div");
   // svgContainer.setAttribute(
@@ -67,16 +70,32 @@ onMounted(() => {
   svgContainer.classList.add("svg-container");
   // svgContainer.style.marginTop = 40 + "px";
 
+  // Note: SVG can be instantiated with a pre-designed svg,
+  // And modified from here onwards.
+
+  // Some naming-conventions
+  // between designers and devs
+  // will smooth such processes out.
+  // eg. better to set the svg editor to output class based
+  // svg's.  That rather than inline-style based.
+
   const svg = SVG().addTo(svgContainer).size(svgWidth, svgHeight).attr({
     style: "border: 8px dotted blue",
   });
-  SVG(svg).addTo(svgContainer).size(svgWidth, svgHeight);
+  // for continuous x-axis we're going to need, something like the ui-pattern for
+  // a circular carousel.
+  // That is: you need at least three synchronous clones of one of this globe-block.
+  // swapping one out for the next. So that there's always at least two of them available for the screen,
+  // while the "reserve" svg, jumps to either end, depending on the direction of movement.
+  // direction of movement, is usefull to watch on any range-slider, it simplifies many
+  // calculations. While going up, this is true. When going down this is true or do this.
+  // SVG(svg).addTo(svgContainer).size(svgWidth, svgHeight);
   const svgResolution = 360 / svgWidth;
 
   const rect = svg.rect(100, 100);
   rect.stroke({ color: "blue", width: 5 });
   rect.fill({ opacity: 0 });
-  const circle = svg
+  circle = svg
     .circle(100)
     .x(50)
     .y(40)
@@ -124,7 +143,57 @@ onMounted(() => {
     }),
   });
   const view = map.getView();
-  console.log("dvdb - onMounted - view", map.getView().calculateExtent());
+  console.log("dvdb - onMounted - view", view);
+});
+
+// Expose your function to the parent.
+// Looks like $refs are becoming first-class
+// citizens, but with the extra safety-catch
+// of defineExpose https://www.youtube.com/watch?v=tqoeAAH21Y4
+const goBlueDown = () => {
+  circle.stroke({ color: "blue" });
+  circle
+    .animate({
+      duration: 2000,
+      // delay: 1000,
+      // when: "now",
+      // swing: true,
+      // times: 5,
+      // wait: 200,
+    })
+    // Now here comes the tricky bit:
+    // How do we make these movements line up with the
+    // geographic-coords?
+    // We must map three kinds of coords between each other
+    // ScreenPixelCoords, SvgCoords, GeoCoords
+    // With a precision-check force update, at the end of every animation.
+    .dmove(-500, -500);
+  // So instead of above more like:
+  // .dmove(geo(17.66634, -67.45434))
+};
+
+const goGreenUp = () => {
+  circle
+    .animate({
+      duration: 2000,
+      // delay: 1000,
+      // when: "now",
+      // swing: true,
+      // times: 5,
+      // wait: 200,
+    })
+    .dmove(500, 500)
+    .animate()
+    .stroke({ color: "green" });
+};
+
+const changeCircleColor = ref(() => {
+  const currentColor = circle.attr("stroke");
+  currentColor === "green" ? goBlueDown() : goGreenUp();
+});
+
+defineExpose({
+  changeCircleColor,
 });
 </script>
 

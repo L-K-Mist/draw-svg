@@ -1,18 +1,24 @@
 <template>
   <div id="svg-chart" ref="svgChart">
     <chart ref="chartComponent" />
-    <BaseButton @click="handleRouteButton">{{
-      showRoute ? "Draw Mode" : "Map Mode"
-    }}</BaseButton>
+    <BaseButton @click="changeCircleColor()"
+      >Change the color of the circle
+    </BaseButton>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, onMounted } from "vue";
 // These look like they're not being used, but they are.
 // the 'script setup' approach does the rest.
 import Chart from "@/components/Chart";
 import BaseButton from "@/baseComponents/BaseButton";
+const chartComponent = ref(null);
+const changeCircleColor = ref(null);
+onMounted(() => {
+  changeCircleColor;
+  changeCircleColor.value = chartComponent.value.changeCircleColor;
+});
 </script>
 
 <style>
