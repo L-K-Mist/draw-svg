@@ -16,7 +16,6 @@ import BaseButton from "@/baseComponents/BaseButton";
 const chartComponent = ref(null);
 const changeCircleColor = ref(null);
 onMounted(() => {
-  changeCircleColor;
   changeCircleColor.value = chartComponent.value.changeCircleColor;
 });
 </script>

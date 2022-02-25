@@ -34,15 +34,21 @@ import OSM from "ol/source/OSM";
 import "ol/ol.css";
 
 import { SVG } from "@svgdotjs/svg.js";
+
+import { screenToSVGPoint } from "@/composables/WebApi.js";
+
 const chart = ref(null);
-let map, svgLayer;
+// local globals
+let map, svgLayer, svg, pixelOne, circle, ctm, point, screenPoint; // svg stuff #reactive-coords
+screenPoint = {
+  x: 300,
+  y: 599,
+};
 
 var projection = getProjection("EPSG:4326");
 var worldExtent = projection.getWorldExtent();
 console.log("dvdb - worldExtent", worldExtent);
 
-// local globals
-let circle;
 // Initialise the map with svg layer
 onMounted(() => {
   const svgContainer = document.createElement("div");
@@ -81,9 +87,11 @@ onMounted(() => {
   // eg. better to set the svg editor to output class based
   // svg's.  That rather than inline-style based.
 
-  const svg = SVG().addTo(svgContainer).size(svgWidth, svgHeight).attr({
+  svg = SVG().addTo(svgContainer).size(svgWidth, svgHeight).attr({
     style: "border: 8px dotted blue",
+    id: "svg-timeline",
   });
+
   // for continuous x-axis we're going to need, something like the ui-pattern for
   // a circular carousel.
   // That is: you need at least three synchronous clones of one of this globe-block.
@@ -108,6 +116,25 @@ onMounted(() => {
     .y(40)
     .stroke({ color: "blue", width: 5 })
     .fill({ opacity: 0 });
+
+  // const { svgX, svgY } = useMousePositionSVG("svg-timeline");
+  screenPoint = {
+    x: screenPoint.x,
+    y: screenPoint.y,
+  };
+  // point = screenToSVGPoint(screenPoint, circle.node);
+  // console.log("dvdb - onMounted - point", point);
+  // ctm = circle.node.getScreenCTM();
+  // console.log("dvdb - onMounted - circle.node", circle.node);
+  // var cx = circle.cx.baseVal;
+  // var cy = circle.cy.baseVal;
+  // console.log("dvdb - onMounted - ctm", ctm);
+  // const inverse = ctm.inverse();
+  // const p = point.matrixTransform(inverse);
+  // cx.value = p.x;
+  // console.log("dvdb - onMounted - cx.value", cx.value);
+  // cy.value = p.y;
+  // console.log("dvdb - onMounted - cy.value", cy.value);
 
   svgLayer = new Layer({
     transparent: true,
@@ -149,9 +176,14 @@ onMounted(() => {
       zoom: 1,
     }),
   });
+  // pixelOne = map.getPixelFromCoordinate([708.0000000000001, 290.9999999999927]);
+  // console.log("dvdb - onMounted - pixelOne", pixelOne);
   const view = map.getView();
-  console.log("dvdb - onMounted - view", view);
+  // console.log("dvdb - onMounted - view", view);
 });
+
+onMounted(() => {});
+// end of svg stuff
 
 // Expose your function to the parent.
 // Looks like $refs are becoming first-class
@@ -191,7 +223,29 @@ const go = ({ color, direction, deltaMove }) => {
   // .dmove(geo(17.66634, -67.45434))
 };
 
+function screenToSVG(screenX, screenY) {
+  var p = svg.node.createSVGPoint();
+  p.x = screenX;
+  p.y = screenY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+function SVGToScreen(svgX, svgY) {
+  var p = svg.node.createSVGPoint();
+  p.x = svgX;
+  p.y = svgY;
+  return p.matrixTransform(svg.node.getScreenCTM());
+}
+
+// var pt = screenToSVG(20, 30);
+// console.log("screenToSVG: ", pt);
+
 const changeCircleColor = ref(() => {
+  const ptSvg = circle.node.getBBox();
+  console.log("dvdb - changeCircleColor - ptSvg", ptSvg);
+  var ptScreen = SVGToScreen(ptSvg.x, ptSvg.y);
+  console.log("dvdb - changeCircleColor - pt", ptScreen);
+
   const currentColor = circle.attr("stroke");
   currentColor === "green"
     ? go({

@@ -1,6 +1,8 @@
 import { ref, onMounted, onUnmounted, onBeforeMount, watchEffect } from "vue";
 import { throttle } from "lodash";
-import { angleBetweenPoints } from "@/helpers";
+import { angleBetweenPoints, screenToSVGPoint as sc } from "@/helpers";
+
+export const screenToSVGPoint = sc;
 
 export function useMousePositionScreen() {
   const x = ref(0);
@@ -26,13 +28,13 @@ export function useMousePositionScreen() {
   };
 }
 
-function screenToSVGPoint(screenPoint, svgElement) {
-  const point = svgElement.createSVGPoint();
-  point.x = screenPoint.x;
-  point.y = screenPoint.y;
-  const svgPoint = point.matrixTransform(svgElement.getScreenCTM().inverse());
-  return svgPoint;
-}
+// function screenToSVGPoint(screenPoint, svgElement) {
+//   const point = svgElement.createSVGPoint();
+//   point.x = screenPoint.x;
+//   point.y = screenPoint.y;
+//   const svgPoint = point.matrixTransform(svgElement.getScreenCTM().inverse());
+//   return svgPoint;
+// }
 
 export function useMousePositionSVG(svgId) {
   const svgX = ref(0);
