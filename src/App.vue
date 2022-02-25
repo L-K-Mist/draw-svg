@@ -8,12 +8,9 @@
 </template>
 
 <script setup>
-/* eslint-disable no-debugger */
-/* eslint-disable no-unused-vars */
 import { ref, computed } from "vue";
 // These look like they're not being used, but they are.
 // the 'script setup' approach does the rest.
-import SvgDrawRoute from "@/components/SvgDrawRoute";
 import Chart from "@/components/Chart";
 import BaseButton from "@/baseComponents/BaseButton";
 </script>
@@ -35,7 +32,8 @@ body {
 #svg-chart {
   outline: 8px dotted gray;
   position: relative;
-  height: 90vh;
+  height: 80vh;
+  margin: 0 80px;
 }
 </style>
 

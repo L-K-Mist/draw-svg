@@ -21,23 +21,22 @@ import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import Layer from "ol/layer/Layer";
 import { toStringHDMS } from "ol/coordinate";
-import {
-  toLonLat,
-  transform,
-  transformExtent,
-  get as getProjection,
-} from "ol/proj";
+import { toLonLat, transform, transformExtent } from "ol/proj";
 import { composeCssTransform } from "ol/transform";
 import OSM from "ol/source/OSM";
 import "ol/ol.css";
 
 import { SVG } from "@svgdotjs/svg.js";
-const chart = ref(null);
-let map, svgLayer;
 
-var projection = getProjection("EPSG:4326");
-var worldExtent = projection.getWorldExtent();
-console.log("dvdb - worldExtent", worldExtent);
+const chart = ref(null);
+const emit = defineEmits(["newExtent", "newPixels", "moveStart", "moveEnd"]);
+let map, svgLayer;
+let handleDrag = ref(function (event) {
+  const newPixels = routeCoords.value.map((coord) =>
+    map.getPixelFromCoordinate(coord.raw)
+  );
+  emit("newPixels", newPixels);
+});
 
 onMounted(() => {
   const svgContainer = document.createElement("div");
@@ -45,63 +44,49 @@ onMounted(() => {
   //   "style",
   //   "position: absolute; width: 100%; height: 100%; z-index: 10;"
   // );
-
-  /**
-   * And these are the kinds of arrays, I'm only starting to get familiar with,
-   * but want to get better at: [-137.66514806378132, -90, 137.66514806378132, 90]1343, 851
-   *
-   */
-
-  // Should be a calculated-value based on the screen-size.
-  // You want to be forcefull/static with its height so that you can
-  // be flexible on its width. Just how world-maps with repeating x-axis work.
-  // In our case: OpenLayers. [Best choice in my opinion, even if I started with leaflet.]
-
-  // The trick here is to make the height the same as the map-canvas height,
-  // and because the world-map - in this case (EPSG:4326) - is a 2 x 1 widthXheight
-  // See: worldExtent(projection) <-- [-180, -90, 180, 90]
-  const svgWidth = 1560;
-  const svgHeight = svgWidth / 2;
+  const svgWidth = 2000;
+  const svgHeight = 100;
   svgContainer.style.width = svgWidth + "px";
   svgContainer.style.height = svgHeight + "px";
-  svgContainer.classList.add("svg-container");
-  // svgContainer.style.marginTop = 40 + "px";
-
-  const svg = SVG().addTo(svgContainer).size(svgWidth, svgHeight).attr({
+  svgContainer.style.transformOrigin = "top left";
+  svgContainer.style.position = "absolute";
+  svgContainer.className = "svg-layer";
+  const svg = SVG().addTo(svgContainer).size(svgWidth, svgHeight);
+  const svgResolution = 360 / svgWidth;
+  svg.attr({
+    fill: "transparent",
+    // "fill-opacity": 0,
     style: "border: 8px dotted blue",
   });
-  SVG(svg).addTo(svgContainer).size(svgWidth, svgHeight);
-  const svgResolution = 360 / svgWidth;
-
   const rect = svg.rect(100, 100);
-  rect.stroke({ color: "blue", width: 5 });
-  rect.fill({ opacity: 0 });
-  const circle = svg
-    .circle(100)
-    .x(50)
-    .y(40)
-    .stroke({ color: "blue", width: 5 })
-    .fill({ opacity: 0 });
 
+  rect.attr({
+    fill: "#blue",
+  });
   svgLayer = new Layer({
     transparent: true,
     render: function (frameState) {
       // console.log("dvdb - onMounted - frameState", frameState);
 
       const [width, height] = frameState.size;
+      // svg.size(width, height);
 
       const scale = svgResolution / frameState.viewState.resolution;
       const center = frameState.viewState.center;
-      // const size = frameState.size;
+      const size = frameState.size;
       const cssTransform = composeCssTransform(
-        width / 2,
-        height / 2,
+        size[0] / 2,
+        size[1] / 2,
         scale,
         scale,
         frameState.viewState.rotation,
         -center[0] / svgResolution - width / 2,
         center[1] / svgResolution - height / 2
       );
+      // svgContainer.style.position = "absolute";
+      // svgContainer.style.width = "100%";
+      // svgContainer.style.height = "100%";
+      // svgContainer.style.opacity = this.getOpacity();
       svgContainer.style.transform = cssTransform;
 
       return svgContainer;
@@ -109,7 +94,7 @@ onMounted(() => {
   });
   map = new Map({
     target: chart.value,
-    projection: "EPSG:4326",
+    projection: "EPSG:3857",
     layers: [
       svgLayer,
       new TileLayer({
@@ -118,27 +103,53 @@ onMounted(() => {
     ],
     view: new View({
       center: [0, 0],
-      // extent: [-180, -90, 180, 90],
+      extent: [-180, -90, 180, 90],
       projection: "EPSG:4326",
-      zoom: 1,
+      zoom: 2,
     }),
   });
-  const view = map.getView();
-  console.log("dvdb - onMounted - view", map.getView().calculateExtent());
-});
-</script>
 
-<style>
-#chart-wrapper {
-  outline: 4px dotted green;
-  position: relative;
+  map.on(["change:resolution", "pointerdrag"], handleDrag.value);
+  map.on("movestart", () => {
+    emit("moveStart");
+  });
+
+  map.on("moveend", () => {
+    emit("moveEnd");
+    handleDrag.value();
+  });
+  map.getView().on("change:resolution", handleDrag.value);
+});
+
+onBeforeUnmount(() => {
+  map.on(
+    (["movestart", "change:resolution", "pointerdrag", "moveend"],
+    handleDrag.value)
+  );
+  map.getView().on("change:resolution", handleDrag.value);
+});
+
+const routeCoords = ref([]);
+
+function handleNewCoords({ elementX, elementY }) {
+  const raw = map.getCoordinateFromPixel([elementX, elementY]);
+
+  const refined = transform(raw, "EPSG:3857", "EPSG:4326");
+  const coordsDMS = toStringHDMS(refined);
+
+  routeCoords.value.push({ refined, raw });
 }
 
-.svg-container {
-  position: absolute;
-  transform-origin: top left;
-  display: flex;
-  z-index: 10;
+function getCoords() {
+  return routeCoords;
+}
+
+defineExpose({ handleNewCoords, getCoords, map });
+</script>
+
+<style scoped>
+#chart-wrapper {
+  outline: 4px dotted green;
 }
 
 #chart {
