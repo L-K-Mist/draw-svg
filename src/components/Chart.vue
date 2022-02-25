@@ -39,6 +39,9 @@ var projection = getProjection("EPSG:4326");
 var worldExtent = projection.getWorldExtent();
 console.log("dvdb - worldExtent", worldExtent);
 
+// local globals
+let circle;
+// Initialise the map with svg layer
 onMounted(() => {
   const svgContainer = document.createElement("div");
   // svgContainer.setAttribute(
@@ -76,7 +79,7 @@ onMounted(() => {
   const rect = svg.rect(100, 100);
   rect.stroke({ color: "blue", width: 5 });
   rect.fill({ opacity: 0 });
-  const circle = svg
+  circle = svg
     .circle(100)
     .x(50)
     .y(40)
@@ -124,7 +127,21 @@ onMounted(() => {
     }),
   });
   const view = map.getView();
-  console.log("dvdb - onMounted - view", map.getView().calculateExtent());
+  console.log("dvdb - onMounted - view", view);
+});
+
+// Expose your function to the parent.
+// Looks like $refs are becoming first-class
+// citizens, but with the extra safety-catch
+// of defineExpose https://www.youtube.com/watch?v=tqoeAAH21Y4
+const changeCircleColor = ref(() => {
+  const currentColor = circle.attr("stroke");
+  currentColor === "green"
+    ? circle.stroke({ color: "blue" })
+    : circle.stroke({ color: "green" });
+});
+defineExpose({
+  changeCircleColor,
 });
 </script>
 
