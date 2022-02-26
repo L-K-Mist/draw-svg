@@ -4,12 +4,11 @@ export function angleBetweenPoints(p1, p2) {
 }
 
 export function screenToSVGPoint(screenPoint, svgElement) {
-  console.log("dvdb - screenToSVGPoint - screenPoint", screenPoint);
   const point = {
     ...screenPoint,
   };
-  // const svgPoint = point.matrixTransform(svgElement.getScreenCTM().inverse());
-  const svgPoint = point;
+  const svgPoint = point.matrixTransform(svgElement.getScreenCTM().inverse());
+  // const svgPoint = point;
   return svgPoint;
 }
 

@@ -5,23 +5,17 @@
 </template>
 
 <script setup>
-/* eslint-disable no-debugger */
-/* eslint-disable no-unused-vars */
-
-import {
-  onMounted,
-  onBeforeUnmount,
-  ref,
-  computed,
-  defineExpose,
-  defineEmits,
-} from "vue";
+import { onMounted, ref, defineExpose } from "vue";
 import { TransitionPresets, useTransition } from "@vueuse/core";
 // OpenLayers
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
 import Layer from "ol/layer/Layer";
+import VectorLayer from "ol/layer/Vector";
+import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
+import VectorSource from "ol/source/Vector";
 import { toStringHDMS } from "ol/coordinate";
 import {
   toLonLat,
@@ -31,15 +25,14 @@ import {
 } from "ol/proj";
 import { composeCssTransform } from "ol/transform";
 import OSM from "ol/source/OSM";
+
 import "ol/ol.css";
 
 import { SVG } from "@svgdotjs/svg.js";
 
-import { screenToSVGPoint } from "@/composables/WebApi.js";
-
 const chart = ref(null);
-// local globals
-let map, svgLayer, svg, pixelOne, circle, ctm, point, screenPoint; // svg stuff #reactive-coords
+// local globals - after tidy becomes interface
+let map, svgLayer, svg, circle, screenPoint, tileLayer; // svg stuff #reactive-coords
 screenPoint = {
   x: 300,
   y: 599,
@@ -52,10 +45,6 @@ console.log("dvdb - worldExtent", worldExtent);
 // Initialise the map with svg layer
 onMounted(() => {
   const svgContainer = document.createElement("div");
-  // svgContainer.setAttribute(
-  //   "style",
-  //   "position: absolute; width: 100%; height: 100%; z-index: 10;"
-  // );
 
   /**
    * And these are the kinds of arrays, I'm only starting to get familiar with,
@@ -71,12 +60,12 @@ onMounted(() => {
   // The trick here is to make the height the same as the map-canvas height,
   // and because the world-map - in this case (EPSG:4326) - is a 2 x 1 widthXheight
   // See: worldExtent(projection) <-- [-180, -90, 180, 90]
+  const [minX, minY, maxX, maxY] = worldExtent; // [-180, -90, 180, 90]
   const svgWidth = 1560;
-  const svgHeight = svgWidth / 2;
-  svgContainer.style.width = svgWidth + "px";
-  svgContainer.style.height = svgHeight + "px";
+  const svgHeight = svgWidth / (maxX / maxY); // works out to half of svgWidth ie. 780
+
+  svgContainer.style += `width: ${svgWidth}px; height: ${svgHeight}px;`;
   svgContainer.classList.add("svg-container");
-  // svgContainer.style.marginTop = 40 + "px";
 
   // Note: SVG can be instantiated with a pre-designed svg,
   // And modified from here onwards.
@@ -97,10 +86,11 @@ onMounted(() => {
   // That is: you need at least three synchronous clones of one of this globe-block.
   // swapping one out for the next. So that there's always at least two of them available for the screen,
   // while the "reserve" svg, jumps to either end, depending on the direction of movement.
-  // direction of movement, is usefull to watch on any range-slider, it simplifies many
+  // direction of movement, is usefull to watch on any changing range-value, it simplifies many
   // calculations. While going up, this is true. When going down this is true or do this.
   // SVG(svg).addTo(svgContainer).size(svgWidth, svgHeight);
-  const svgResolution = 360 / svgWidth;
+
+  const svgResolution = (maxX - minX) / svgWidth; // 360
   const polygon = svg
     .polygon("0,0 100,50 50,100")
     .fill("none")
@@ -117,6 +107,10 @@ onMounted(() => {
     .stroke({ color: "blue", width: 5 })
     .fill({ opacity: 0 });
 
+  circle.transform({
+    translate: [circle.radius(), circle.radius()],
+  });
+  console.log("dvdb - onMounted - circle.", circle);
   // const { svgX, svgY } = useMousePositionSVG("svg-timeline");
   screenPoint = {
     x: screenPoint.x,
@@ -160,15 +154,13 @@ onMounted(() => {
       return svgContainer;
     },
   });
+  tileLayer = new TileLayer({
+    source: new OSM(),
+  });
   map = new Map({
     target: chart.value,
     projection: "EPSG:4326",
-    layers: [
-      svgLayer,
-      new TileLayer({
-        source: new OSM(),
-      }),
-    ],
+    layers: [svgLayer, tileLayer],
     view: new View({
       center: [0, 0],
       // extent: [-180, -90, 180, 90],
@@ -230,7 +222,7 @@ function screenToSVG(screenX, screenY) {
   return p.matrixTransform(svg.getScreenCTM().inverse());
 }
 
-function SVGToScreen(svgX, svgY) {
+function SVGToScreen([svgX, svgY]) {
   var p = svg.node.createSVGPoint();
   p.x = svgX;
   p.y = svgY;
@@ -239,12 +231,49 @@ function SVGToScreen(svgX, svgY) {
 
 // var pt = screenToSVG(20, 30);
 // console.log("screenToSVG: ", pt);
+function createFeatureAt(geoPoint) {
+  console.log("dvdb - createFeatureAt - geoPoint", geoPoint);
+  var feature = new Feature({
+    labelPoint: new Point(geoPoint),
+    name: "My Polygon",
+  });
+
+  var layer = new VectorLayer({
+    source: new VectorSource({
+      features: [feature],
+    }),
+    // style: function (feature) {
+    //   console.log(feature.getGeometry().getType());
+    //   return styles[feature.getGeometry().getType()];
+    // },
+  });
+  feature.setGeometryName("labelPoint");
+
+  map.addLayer(layer);
+
+  // var feature = new Feature({
+  //   labelPoint: new Point(geoPoint),
+  //   name: "My Polygon",
+  // });
+  // map.addFeature(feature);
+}
+function geoFromSVGPoint(ptSvg) {
+  const ptScreen = SVGToScreen([ptSvg.x, ptSvg.y]);
+  return map.getCoordinateFromPixel([ptScreen.x, ptScreen.y]);
+}
 
 const changeCircleColor = ref(() => {
   const ptSvg = circle.node.getBBox();
   console.log("dvdb - changeCircleColor - ptSvg", ptSvg);
-  var ptScreen = SVGToScreen(ptSvg.x, ptSvg.y);
-  console.log("dvdb - changeCircleColor - pt", ptScreen);
+  // circle.node.transformOrigin();
+  var group = svg.group();
+  group.add(circle);
+  // Example transform but cx and cy of svg circle is fortunately based on center of the circle.
+  // group.transform({ translate: [circle.radius(), circle.radius()] });
+  const ptGeo = geoFromSVGPoint(ptSvg);
+  console.log("dvdb - changeCircleColor - ptGeo", ptGeo);
+
+  createFeatureAt(ptGeo);
 
   const currentColor = circle.attr("stroke");
   currentColor === "green"
